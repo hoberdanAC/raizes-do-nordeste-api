@@ -1,0 +1,64 @@
+# Configuração principal. Valores sensíveis vêm de variáveis de ambiente (ver .env.example).
+server:
+  port: ${SERVER_PORT:8080}
+
+spring:
+  application:
+    name: raizes-do-nordeste-api
+  datasource:
+    # H2 em ARQUIVO: os dados persistem entre reinicializações (não é mais lista em memória).
+    # MODE=PostgreSQL deixa o SQL compatível com o perfil "postgres".
+    url: jdbc:h2:file:./data/raizesdb;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH
+    username: sa
+    password:
+  jpa:
+    # "none": quem cria e evolui o banco é SOMENTE o Flyway (migrations versionadas).
+    # O Hibernate nunca altera o schema -> o DER documentado é exatamente o banco real.
+    hibernate:
+      ddl-auto: none
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  jackson:
+    default-property-inclusion: non_null
+    serialization:
+      write-dates-as-timestamps: false
+
+app:
+  jwt:
+    secret: ${JWT_SECRET:raizes-do-nordeste-segredo-local-de-desenvolvimento-2026}
+    expiration-seconds: ${JWT_EXPIRATION_SECONDS:3600}
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+    tags-sorter: alpha
+  api-docs:
+    path: /v3/api-docs
+
+logging:
+  level:
+    br.com.raizesdonordeste: INFO
+
+---
+# Perfil opcional para PostgreSQL: SPRING_PROFILES_ACTIVE=postgres
+spring:
+  config:
+    activate:
+      on-profile: postgres
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/raizes}
+    username: ${DB_USER:raizes}
+    password: ${DB_PASSWORD:raizes}
+  h2:
+    console:
+      enabled: false
